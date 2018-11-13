@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "70120342135",
+    "firebase_url": "https://celersms.firebaseio.com",
+    "project_id": "celersms",
+    "storage_bucket": "celersms.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:70120342135:android:e5d3cf0c662ac936",
+        "android_client_info": {
+          "package_name": "org.nativescript.CelerSMS"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "70120342135-l25hjlssnm0kqi15l0dfm86b283fvach.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBClv0JmD3vaXzrY225EgdIpzc87MGvUgg"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
