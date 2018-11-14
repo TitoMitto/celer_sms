@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:celer_sms/dialogs/common.dart';
 import 'package:celer_sms/pages/message_thread.dart';
+import 'package:celer_sms/pages/settings.dart';
 import 'package:celer_sms/services/api.dart';
 import 'package:celer_sms/values/enums.dart';
 import 'package:celer_sms/values/strings.dart';
@@ -33,6 +34,13 @@ class _HomePageState extends State<HomePage> {
     setMessages();
     setOnMessageReceived();
   }
+
+  void navigateToSettings(){
+    Navigator.of(context).push(MaterialPageRoute(builder: (context){
+      return SettingsPage();
+    }));
+  }
+
   void openMessageThread(threadId, address){
     Navigator.of(context).push(MaterialPageRoute(builder: (context){
       return MessageThreadPage(threadId: threadId, address: address,);
