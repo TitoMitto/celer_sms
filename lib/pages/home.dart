@@ -2,8 +2,9 @@ import 'dart:convert';
 
 import 'package:celer_sms/dialogs/common.dart';
 import 'package:celer_sms/pages/message_thread.dart';
-import 'package:celer_sms/pages/settings.dart';
+import 'package:celer_sms/pages/settings_page.dart';
 import 'package:celer_sms/services/api.dart';
+import 'package:celer_sms/tools/settings_manager.dart';
 import 'package:celer_sms/values/enums.dart';
 import 'package:celer_sms/values/strings.dart';
 import 'package:celer_sms/widgets/message_item.dart';
@@ -23,6 +24,7 @@ class _HomePageState extends State<HomePage> {
   ApiService api = ApiService();
   bool _isSearch = false;
   bool _hasText = false;
+  SettingsManager settingsManager = SettingsManager();
   String cutText(String text, [length=40]){
     if(text.length > length) return text.substring(0, length)+ "...";
     else return text;
@@ -53,21 +55,28 @@ class _HomePageState extends State<HomePage> {
     print(inboxMessages);
     setState((){});
   }
+  void _testSend(){
+    _saveMessage(this.inboxMessages.first);
+  }
 
-  void _saveMessage(SmsMessage msg){
-    api.saveMessage({
-      "address":msg.address.toString(),
-      "dateSent":msg.dateSent.toString(),
-      "date":msg.date.toString(),
-      "thread_id":msg.threadId.toString(),
-      "body": msg.body.toString(),
-    }).then((response){
+  void _saveMessage(SmsMessage msg) async {
+    var phoneNumber = await settingsManager.getPhoneNumber();
+    Map data = {
+      "from": msg.address.toString(),
+      "message_body": msg.body.toString(),
+      "date_sent": msg.dateSent.toString(),
+      "date_received": msg.date.toString(),
+      "message_id": msg.id ?? 0.toString(),
+      "to": phoneNumber.toString()
+    };
+    print(data);
+    api.saveMessage(data).then((response){
       print(response.body);
       bool successful;
       try {
         var responseBody = json.decode(response.body);
         successful = true;
-      }catch(e){
+      } catch(e){
         successful = false;
       }
 
@@ -80,7 +89,7 @@ class _HomePageState extends State<HomePage> {
           ..shadowColor = Colors.green[800]
           ..duration = Duration(seconds: 3)
           ..show(context);
-      } else {
+      }else{
         Flushbar()
           ..title = "An error occured"
           ..message = "Could not parse response"
@@ -141,7 +150,7 @@ class _HomePageState extends State<HomePage> {
                           break;
                         }
                         case HomeMenuOptions.settings: {
-                          //openSettings();
+                          navigateToSettings();
                           break;
                         }
                       }
@@ -207,15 +216,17 @@ class _HomePageState extends State<HomePage> {
                   );
                 }),
               ),
-              Text("Outbox"),
-              Text("Preferences")
+              Center(
+                child: Text("Comming soon"),
+              ),
+              Center(
+                child: Text("Comming soon"),
+              ),
             ]),
             floatingActionButton: FloatingActionButton(
                 backgroundColor: Colors.orangeAccent,
                 child: Icon(Icons.message, color: Colors.white,),
-                onPressed: (){
-
-                }),
+                onPressed: (){}),
           ))
     );
   }
