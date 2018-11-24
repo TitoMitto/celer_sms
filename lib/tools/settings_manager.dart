@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:celer_sms/utils/platform_utils.dart';
 
 class SettingsManager {
   SettingsManager();
@@ -11,32 +11,28 @@ class SettingsManager {
   }
 
   Future<bool> hasSettings() async {
-    Map settings = await getSettings();
+    Map settings = await getUserSettings();
     return (settings == null || settings.isEmpty)?  false : true;
   }
 
-  Future<String> getPhoneNumber() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    return prefs.getString("phoneNumber");
-  }
 
   Future<bool> setPhoneNumber(String phoneNumber) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setString("phoneNumber", phoneNumber);
-    return await prefs.commit();
+
+    return await setSettings("phoneNumber", phoneNumber);
   }
 
-  Future<bool> setSettings(Map settings) async {
+  Future<String> getPhoneNumber() async {
+    return await getSettings("phoneNumber");
+  }
+
+
+  Future<bool> setUserSettings(Map settings) async {
     String settingsAsString = json.encode(settings);
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setString("settings", settingsAsString);
-    return await prefs.commit();
+    return await setSettings("settings", settingsAsString);
   }
 
-  Future<Map> getSettings() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String settingsAsString = prefs.getString("settings");
-
+  Future<Map> getUserSettings() async {
+    String settingsAsString = await getSettings("settings");
     return (settingsAsString != null && settingsAsString != "")? json.decode(settingsAsString):null;
   }
 

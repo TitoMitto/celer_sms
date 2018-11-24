@@ -7,7 +7,7 @@ import 'package:intl/intl.dart';
 class ApiService {
   SettingsManager settingsManager = SettingsManager();
   Future saveMessage(Map body) async {
-    Map settings = await settingsManager.getSettings();
+    Map settings = await settingsManager.getUserSettings();
     String _apiUrl = settings["apiUrl"];
     print("$_apiUrl");
     return http.post(_apiUrl, body: body, headers: {

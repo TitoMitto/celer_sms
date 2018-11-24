@@ -1,6 +1,6 @@
 import 'package:celer_sms/pages/home.dart';
 import 'package:celer_sms/tools/settings_manager.dart';
-import 'package:celer_sms/utils/time-utils.dart';
+import 'package:celer_sms/utils/time_utils.dart';
 import 'package:celer_sms/values/strings.dart';
 import 'package:flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
@@ -22,14 +22,14 @@ class _SettingsPageState extends State<SettingsPage> {
 
   void _displaySettings() async {
     if(await settingsManager.hasSettings()){
-      Map settings = await settingsManager.getSettings();
+      Map settings = await settingsManager.getUserSettings();
       _title.text = settings["title"];
       _apiUrl.text = settings["apiUrl"];
     }
   }
 
   _saveSettings() async {
-    settingsManager.setSettings({
+    settingsManager.setUserSettings({
       "title": _title.text,
       "apiUrl": _apiUrl.text
     }).then((value){
@@ -48,7 +48,7 @@ class _SettingsPageState extends State<SettingsPage> {
       _title.text = appName;
       _apiUrl.text = apiUrl;
     });
-    settingsManager.setSettings({
+    settingsManager.setUserSettings({
       "title": appName,
       "apiUrl": apiUrl
     }).then((value){

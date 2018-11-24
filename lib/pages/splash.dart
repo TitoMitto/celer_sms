@@ -1,7 +1,7 @@
 import 'package:celer_sms/pages/auth_page.dart';
 import 'package:celer_sms/pages/home.dart';
 import 'package:celer_sms/tools/settings_manager.dart';
-import 'package:celer_sms/utils/time-utils.dart';
+import 'package:celer_sms/utils/time_utils.dart';
 import 'package:celer_sms/values/strings.dart';
 import 'package:flutter/material.dart';
 import 'package:permission/permission.dart';
@@ -20,7 +20,7 @@ class _SplashPageState extends State<SplashPage> {
   }
   void navigate() async {
     if(!await settingsManager.hasSettings()){
-      await settingsManager.setSettings({
+      await settingsManager.setUserSettings({
         "title": appName,
         "apiUrl": apiUrl
       });
@@ -32,9 +32,8 @@ class _SplashPageState extends State<SplashPage> {
   }
 
   void requestPermissions() async {
-    Permission.requestPermissions([PermissionName.SMS,PermissionName.Phone]).then((value){
-      setTimeout(navigate, 500);
-    });
+    //await Permission.requestPermissions([PermissionName.SMS,PermissionName.Phone]);
+    setTimeout(navigate, 500);
   }
 
   @override

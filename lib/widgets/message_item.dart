@@ -1,10 +1,11 @@
-import 'package:celer_sms/utils/date-utils.dart';
+import 'package:celer_sms/utils/date_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:sms/contact.dart';
 import 'package:sms/sms.dart';
 
 class MessageItem extends StatelessWidget {
   int id;
+  int synced;
   int threadId;
   String title;
   String body;
@@ -12,7 +13,7 @@ class MessageItem extends StatelessWidget {
   String photo;
   Function onTap;
   ContactQuery contacts = new ContactQuery();
-  MessageItem({this.title, this.body, this.id, this.onTap, this.threadId, this.date});
+  MessageItem({this.title, this.body, this.id,this.synced = 0, this.onTap, this.threadId, this.date});
 
   @override
   Widget build(BuildContext context) {
@@ -45,7 +46,7 @@ class MessageItem extends StatelessWidget {
                         flex:3,
                         child: new Container(
                           width: 162.0,
-                          child: Text("$title", textAlign: TextAlign.start,overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.w600),),
+                          child: Text("$title", textAlign: TextAlign.start,overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 16.0, color: (synced == 1)? Theme.of(context).primaryColor.withOpacity(0.8):Colors.black, fontWeight: FontWeight.w600),),
                         ),
                       ),
                       new Container(

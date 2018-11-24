@@ -1,9 +1,11 @@
+import 'package:country_code_picker/country_code_picker.dart';
 import 'package:flutter/material.dart';
 
 class NumberEntry extends StatelessWidget {
   TextEditingController phoneNumber;
   Function onFinish;
-  NumberEntry({this.onFinish, this.phoneNumber});
+  Function onCountryChange;
+  NumberEntry({this.onFinish, this.phoneNumber, this.onCountryChange});
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -28,7 +30,12 @@ class NumberEntry extends StatelessWidget {
               decoration: InputDecoration(
                   hintText: "Phone number",
                   //labelText: "Sent time key",
-                  border: InputBorder.none
+                  border: InputBorder.none,
+                prefixIcon: CountryCodePicker(
+                  onChanged: onCountryChange,
+                  initialSelection: 'KE',
+                  favorite: ['KE'],
+                ),
               ),
             ),
           ),

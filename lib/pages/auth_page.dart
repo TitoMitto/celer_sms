@@ -2,6 +2,7 @@ import 'package:celer_sms/pages/home.dart';
 import 'package:celer_sms/tools/settings_manager.dart';
 import 'package:celer_sms/widgets/number_entry.dart';
 import 'package:flutter/material.dart';
+import 'package:country_code_picker/country_code_picker.dart';
 
 class AuthPage extends StatefulWidget {
   @override
@@ -11,10 +12,11 @@ class AuthPage extends StatefulWidget {
 class _AuthPageState extends State<AuthPage> {
   SettingsManager settingsManager = SettingsManager();
   TextEditingController _phoneNumber = TextEditingController();
+  CElement _countryCode;
 
   void _savePhoneNumber() async {
     if(_phoneNumber.text.trim() != ""){
-      await settingsManager.setPhoneNumber(_phoneNumber.text);
+      await settingsManager.setPhoneNumber(_countryCode.dialCode+""+_phoneNumber.text);
       _navigateToHome();
     }
   }
@@ -61,6 +63,9 @@ class _AuthPageState extends State<AuthPage> {
                   color: Theme.of(context).primaryColor,
                 ),
                 NumberEntry(
+                  onCountryChange: (value){
+                    _countryCode = value;
+                  },
                   onFinish: _savePhoneNumber,
                   phoneNumber: _phoneNumber,
                 )

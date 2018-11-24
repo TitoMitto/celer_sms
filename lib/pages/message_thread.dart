@@ -21,7 +21,7 @@ class _MessageThreadPageState extends State<MessageThreadPage> {
     getThreadMessages();
   }
   void getThreadMessages() async {
-    threads = await query.queryThreads([this.widget.threadId], kinds: [SmsQueryKind.Inbox, SmsQueryKind.Sent]);
+    threads = await query.queryThreads([this.widget.threadId], kinds: [SmsQueryKind.Sent]);
     threadMessages = threads.first.messages.reversed.toList();
     setState(() {});
   }

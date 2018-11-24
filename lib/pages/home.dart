@@ -5,9 +5,12 @@ import 'package:celer_sms/pages/message_thread.dart';
 import 'package:celer_sms/pages/settings_page.dart';
 import 'package:celer_sms/services/api.dart';
 import 'package:celer_sms/tools/settings_manager.dart';
+import 'package:celer_sms/utils/platform_utils.dart';
+import 'package:celer_sms/utils/time_utils.dart';
 import 'package:celer_sms/values/enums.dart';
 import 'package:celer_sms/values/strings.dart';
 import 'package:celer_sms/widgets/message_item.dart';
+import 'package:celer_sms/widgets/search_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:sms/sms.dart';
 import 'package:flushbar/flushbar.dart';
@@ -20,10 +23,13 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   SmsQuery query = new SmsQuery();
   SmsReceiver receiver = new SmsReceiver();
-  List<SmsMessage> inboxMessages= [];
+  TextEditingController _searchController = TextEditingController();
+  List<dynamic> _allInboxMessages = [];
+  List<dynamic> _inboxMessages= [];
   ApiService api = ApiService();
-  bool _isSearch = false;
+  bool _isSearching = false;
   bool _hasText = false;
+
   SettingsManager settingsManager = SettingsManager();
   String cutText(String text, [length=40]){
     if(text.length > length) return text.substring(0, length)+ "...";
@@ -33,6 +39,7 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     // TODO: implement initState
     super.initState();
+    _searchController.addListener(_onSearch);
     setMessages();
     setOnMessageReceived();
   }
@@ -48,15 +55,17 @@ class _HomePageState extends State<HomePage> {
       return MessageThreadPage(threadId: threadId, address: address,);
     }));
   }
+
   void setMessages() async {
-    this.inboxMessages = await query.querySms(
-      kinds: [SmsQueryKind.Inbox]
-    );
-    print(inboxMessages);
+    _allInboxMessages = await getAllMessages();
+    if(!_isSearching){
+      _inboxMessages = _allInboxMessages;
+    }
+    print(_inboxMessages);
     setState((){});
   }
   void _testSend(){
-    _saveMessage(this.inboxMessages.first);
+    //_saveMessage(this.inboxMessages.first);
   }
 
   void _saveMessage(SmsMessage msg) async {
@@ -66,7 +75,8 @@ class _HomePageState extends State<HomePage> {
       "message_body": msg.body.toString(),
       "date_sent": msg.dateSent.toString(),
       "date_received": msg.date.toString(),
-      "message_id": msg.id ?? 0.toString(),
+      "message_id": msg.id?.toString() ?? 0.toString(),
+      "uuid": msg.hashCode.toString(),
       "to": phoneNumber.toString()
     };
     print(data);
@@ -103,17 +113,53 @@ class _HomePageState extends State<HomePage> {
 
   }
 
-  void setOnMessageReceived(){
-    receiver.onSmsReceived.listen((SmsMessage msg) {
-      _saveMessage(msg);
-      setMessages();
-      print("Received new message from ${msg.address}  AND its state is ${msg.state}");
+  void _onExitSearch(){
+    setState(() {
+      _isSearching = false;
+      _inboxMessages = _allInboxMessages;
     });
+  }
+  void _onSearch(){
+    setState(() {
+      var _searchText = _searchController.text.toLowerCase();
+      _inboxMessages = _allInboxMessages.where((item)=>
+      item["address"].toString().toLowerCase().contains(_searchText) ||
+          item["body"].toString().toLowerCase().contains(_searchText)
+      ).toList();
+    });
+  }
+  void _onClearSearch(){
+    setState(() {
+      _searchController.text = "";
+      _inboxMessages = _allInboxMessages;
+    });
+  }
+
+  void setOnMessageReceived(){
+    receiver.onSmsReceived.listen((SmsMessage msg) async {
+      showMessagesAfterMs(1);
+      showMessagesAfterMs(10000);
+      showMessagesAfterMs(30000);
+    });
+  }
+
+  void showMessagesAfterMs(int time){
+    setTimeout(() async {
+      print("MSG_SHOW_TIMEOUT $time");
+      _allInboxMessages = await getAllMessages();
+      if(!_isSearching){
+        _inboxMessages = _allInboxMessages;
+      }
+
+
+      setState(() {});
+    }, time);
   }
 
   void openSettings(){
 
   }
+
   @override
   Widget build(BuildContext context) {
     return new MaterialApp(
@@ -126,8 +172,20 @@ class _HomePageState extends State<HomePage> {
         home: DefaultTabController(
           length: 3,
           child: Scaffold(
-            appBar: (!_isSearch)? AppBar(
+            appBar: (!_isSearching)? AppBar(
               actions: <Widget>[
+                InkResponse(
+                    radius: 5.0,
+                    child: IconButton(
+                        icon: Icon(
+                          Icons.refresh,
+                          color: Colors.white,
+                        ),
+                        tooltip: 'Refresh',
+                        onPressed: (){
+                          showMessagesAfterMs(1);
+                        })
+                ),
                 InkResponse(
                     radius: 5.0,
                     child: IconButton(
@@ -138,7 +196,7 @@ class _HomePageState extends State<HomePage> {
                         tooltip: 'Search',
                         onPressed: (){
                           setState(() {
-                            _isSearch  = true;
+                            _isSearching  = true;
                           });
                         })
                 ),
@@ -170,63 +228,47 @@ class _HomePageState extends State<HomePage> {
                 )
               ],
               title: Text("Celer SMS"),
-              bottom: TabBar(tabs: [
-                Tab(text: "INBOX"),
-                Tab(text: "OUTBOX"),
-                Tab(text: "PREFERENCE")
-              ]),
-            ): AppBar(
-              backgroundColor: Colors.white,
-              title: TextFormField(
-                autofocus: true,
-                onSaved: (String my){
-                  showToast("Saving $my");
-                },
-                decoration: InputDecoration(
-                    border: InputBorder.none,
-                    hintText: "Search...",
-                    hintStyle: TextStyle(fontSize: 17.0, fontWeight: FontWeight.w500 )
-                ),
-              ),
-              leading: InkResponse(
-                onTap: (){
-                  setState(() {
-                    _isSearch = false;
-                  });
-                },
-                child: Icon(Icons.arrow_back, color: Theme.of(context).primaryColor,),
-              ),
+            ): SearchBar(
+              onClearSearch: _onClearSearch,
+              onExitSearch: _onExitSearch,
+              searchController: _searchController,
             ),
-            body: TabBarView(children: [
-              Container(
-                width: MediaQuery.of(context).size.width,
-                height: MediaQuery.of(context).size.height,
-                child: ListView.builder(
-                    itemCount: inboxMessages.length,
-                    itemBuilder: (context, index){
-                  return MessageItem(
-                    id: inboxMessages[index].id,
-                    title: inboxMessages[index].address,
-                    date: inboxMessages[index].dateSent.toString(),
-                    body: inboxMessages[index].body,
-                    onTap: (){
-                      openMessageThread(inboxMessages[index].threadId, inboxMessages[index].address);
-                      print("Tapped Thread: ${inboxMessages[index].threadId}");
-                    },
-                  );
-                }),
+            body: (_allInboxMessages.length > 0)? Container(
+              width: MediaQuery.of(context).size.width,
+              height: MediaQuery.of(context).size.height,
+              child: ListView.builder(
+                  itemCount: _inboxMessages.length,
+                  itemBuilder: (context, index){
+                    return MessageItem(
+                      id: 0,
+                      synced: _inboxMessages[index]["synced"],
+                      title: _inboxMessages[index]["address"],
+                      date: _inboxMessages[index]["date_sent"],
+                      body: _inboxMessages[index]["body"],
+                      onTap: (){
+                        openMessageThread(_inboxMessages[index]["thread_id"], _inboxMessages[index]["address"]);
+                        print("Tapped Thread: ${_inboxMessages[index]["thread_id"]}");
+                      },
+                    );
+                  }),
+            ):Container(
+              color: Colors.white,
+              height: double.infinity,
+              width: double.infinity,
+              padding: EdgeInsets.all(40.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: <Widget>[
+                  Image.asset("assets/images/smartphone.png", width: 80.0, height: 80.0,),
+                  Text("No messages", style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.w700),),
+                  Text("Received messages will be saved and displayed here. You can send a message to try it out.",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 16.0, color: Colors.black54, fontWeight: FontWeight.w400),
+                  )
+                ],
               ),
-              Center(
-                child: Text("Comming soon"),
-              ),
-              Center(
-                child: Text("Comming soon"),
-              ),
-            ]),
-            floatingActionButton: FloatingActionButton(
-                backgroundColor: Colors.orangeAccent,
-                child: Icon(Icons.message, color: Colors.white,),
-                onPressed: (){}),
+            )
           ))
     );
   }
